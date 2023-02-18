@@ -173,6 +173,30 @@
 
 BSSL_NAMESPACE_BEGIN
 
+// #ifdef INSTRUMENTATION
+struct TLS13state curState;
+int stateCounter = 0;
+
+void printTLS13State() {
+  fprintf(stderr, "\n---------------- State : %d ---------------------\n", stateCounter);
+  fprintf(stderr, "session_id_set : %d \n", curState.session_id_set);
+  fprintf(stderr, "random_set : %d \n", curState.random_set);
+  fprintf(stderr, "handshake_secret_set : %d \n", curState.handshake_secret_set);
+  fprintf(stderr, "handshake_key_set : %d \n", curState.handshake_key_set);
+  fprintf(stderr, "handshake_iv_set : %d \n", curState.handshake_iv_set);
+  fprintf(stderr, "master_secret_set : %d \n", curState.master_secret_set);
+  fprintf(stderr, "application_key_set : %d \n", curState.application_key_set);
+  fprintf(stderr, "application_iv_set : %d \n", curState.application_iv_set);
+  fprintf(stderr, "error_status : %d \n", curState.error_status);
+  fprintf(stderr, "terminated : %d \n", curState.terminated);
+  fprintf(stderr, "message_expected : %s \n", curState.message_expected);
+  fprintf(stderr, "message_received : %s \n", curState.message_received);
+  fprintf(stderr, "message_sent : %s \n", curState.message_sent);
+  fprintf(stderr, "\n-----------------------------------------\n");
+  stateCounter++;
+}
+// #endif
+
 bool ssl_client_cipher_list_contains_cipher(
     const SSL_CLIENT_HELLO *client_hello, uint16_t id) {
   CBS cipher_suites;
@@ -629,6 +653,11 @@ static bool extract_sni(SSL_HANDSHAKE *hs, uint8_t *out_alert,
 }
 
 static enum ssl_hs_wait_t do_read_client_hello(SSL_HANDSHAKE *hs) {
+  
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_received, "client hello");
+  // #endif
+
   SSL *const ssl = hs->ssl;
 
   SSLMessage msg;
@@ -1853,6 +1882,9 @@ enum ssl_hs_wait_t ssl_server_handshake(SSL_HANDSHAKE *hs) {
     switch (state) {
       case state12_start_accept:
         ret = do_start_accept(hs);
+        // #ifdef INSTRUMENTATION
+        printTLS13State();
+        // #endif
         break;
       case state12_read_client_hello:
         ret = do_read_client_hello(hs);

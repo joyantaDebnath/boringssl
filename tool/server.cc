@@ -24,6 +24,9 @@
 #include "internal.h"
 #include "transport_common.h"
 
+// #ifdef INSTRUMENTATION
+#include "../ssl/internal.h"
+// #endif
 
 static const struct argument kArguments[] = {
     {
@@ -412,6 +415,13 @@ bool Server(const std::vector<std::string> &args) {
       int ssl_err = SSL_get_error(ssl.get(), ret);
       PrintSSLError(stderr, "Error while connecting", ssl_err, ret);
       result = false;
+
+      // #ifdef INSTRUMENTATION
+      bssl::curState.error_status = true;
+      strcpy(bssl::curState.message_sent, "error");
+      bssl::printTLS13State();
+      // #endif
+
       continue;
     }
 

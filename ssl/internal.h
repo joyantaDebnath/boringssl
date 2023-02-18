@@ -179,6 +179,30 @@ OPENSSL_MSVC_PRAGMA(warning(pop))
 
 BSSL_NAMESPACE_BEGIN
 
+// #ifdef INSTRUMENTATION
+struct TLS13state {
+  bool session_id_set = false;
+  bool random_set = false;
+  bool handshake_secret_set = false;
+  bool handshake_key_set = false;
+  bool handshake_iv_set = false;
+  bool master_secret_set = false;
+  bool application_key_set = false;
+  bool application_iv_set = false;
+  bool error_status = false;
+  bool terminated = false;
+
+  char message_received[100] = "NULL";
+  char message_sent[100] = "NULL";
+  char message_expected[100] = "NULL";
+};
+
+void printTLS13State(void);
+
+extern struct TLS13state curState;
+extern int stateCounter;
+// #endif
+
 struct SSL_CONFIG;
 struct SSL_HANDSHAKE;
 struct SSL_PROTOCOL_METHOD;

@@ -222,6 +222,10 @@ static enum ssl_hs_wait_t do_select_parameters(SSL_HANDSHAKE *hs) {
                  client_hello.session_id_len);
   hs->session_id_len = client_hello.session_id_len;
 
+  // #ifdef INSTRUMENTATION
+  curState.session_id_set = true;
+  // #endif
+
   uint16_t group_id;
   if (!tls1_get_shared_group(hs, &group_id)) {
     OPENSSL_PUT_ERROR(SSL, SSL_R_NO_SHARED_GROUP);
@@ -749,6 +753,10 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
     }
   }
 
+  // #ifdef INSTRUMENTATION
+  curState.random_set = true;
+  // #endif
+
   Array<uint8_t> server_hello;
   ScopedCBB cbb;
   CBB body, extensions, session_id;
@@ -790,6 +798,11 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
     return ssl_hs_error;
   }
 
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_sent, "server hello");
+  printTLS13State();
+  // #endif
+
   hs->ecdh_public_key.Reset();  // No longer needed.
   if (!ssl->s3->used_hello_retry_request &&
       !ssl->method->add_change_cipher_spec(ssl)) {
@@ -804,6 +817,12 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
     return ssl_hs_error;
   }
 
+  // #ifdef INSTRUMENTATION
+  curState.handshake_secret_set = true;
+  curState.handshake_key_set = true;
+  curState.handshake_iv_set = true;
+  // #endif
+
   // Send EncryptedExtensions.
   if (!ssl->method->init_message(ssl, cbb.get(), &body,
                                  SSL3_MT_ENCRYPTED_EXTENSIONS) ||
@@ -811,6 +830,12 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
       !ssl_add_message_cbb(ssl, cbb.get())) {
     return ssl_hs_error;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_received, "NULL");
+  strcpy(curState.message_sent, "encrypted extensions");
+  printTLS13State();
+  // #endif
 
   if (!ssl->s3->session_reused) {
     // Determine whether to request a client certificate.
@@ -853,6 +878,12 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
     if (!ssl_add_message_cbb(ssl, cbb.get())) {
       return ssl_hs_error;
     }
+  
+    // #ifdef INSTRUMENTATION
+    strcpy(curState.message_received, "NULL");
+    strcpy(curState.message_sent, "client certificate request");
+    printTLS13State();
+    // #endif
   }
 
   // Send the server Certificate message, if necessary.
@@ -866,6 +897,12 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
       return ssl_hs_error;
     }
 
+    // #ifdef INSTRUMENTATION
+    strcpy(curState.message_received, "NULL");
+    strcpy(curState.message_sent, "server certificate");
+    printTLS13State();
+    // #endif
+
     hs->tls13_state = state13_send_server_certificate_verify;
     return ssl_hs_ok;
   }
@@ -878,6 +915,13 @@ static enum ssl_hs_wait_t do_send_server_certificate_verify(SSL_HANDSHAKE *hs) {
   switch (tls13_add_certificate_verify(hs)) {
     case ssl_private_key_success:
       hs->tls13_state = state13_send_server_finished;
+
+      // #ifdef INSTRUMENTATION
+      strcpy(curState.message_received, "NULL");
+      strcpy(curState.message_sent, "server certificate verify");
+      printTLS13State();
+      // #endif
+
       return ssl_hs_ok;
 
     case ssl_private_key_retry:
@@ -909,6 +953,15 @@ static enum ssl_hs_wait_t do_send_server_finished(SSL_HANDSHAKE *hs) {
                              hs->server_traffic_secret_0())) {
     return ssl_hs_error;
   }
+
+  // #ifdef INSTRUMENTATION
+  curState.master_secret_set = true;
+  curState.application_key_set = true;
+  curState.application_iv_set = true;
+  strcpy(curState.message_received, "NULL");
+  strcpy(curState.message_sent, "server handshake finished");
+  printTLS13State();
+  // #endif
 
   hs->tls13_state = state13_send_half_rtt_ticket;
   return hs->handback ? ssl_hs_handback : ssl_hs_ok;
@@ -1107,6 +1160,12 @@ static enum ssl_hs_wait_t do_read_client_certificate(SSL_HANDSHAKE *hs) {
     return ssl_hs_error;
   }
 
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_received, "client certificate");
+  strcpy(curState.message_sent, "NULL");
+  printTLS13State();
+  // #endif
+
   ssl->method->next_message(ssl);
   hs->tls13_state = state13_read_client_certificate_verify;
   return ssl_hs_ok;
@@ -1140,6 +1199,12 @@ static enum ssl_hs_wait_t do_read_client_certificate_verify(SSL_HANDSHAKE *hs) {
       !ssl_hash_message(hs, msg)) {
     return ssl_hs_error;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_received, "client certificate verify");
+  strcpy(curState.message_sent, "NULL");
+  printTLS13State();
+  // #endif
 
   ssl->method->next_message(ssl);
   hs->tls13_state = state13_read_channel_id;
@@ -1184,6 +1249,12 @@ static enum ssl_hs_wait_t do_read_client_finished(SSL_HANDSHAKE *hs) {
                              hs->client_traffic_secret_0())) {
     return ssl_hs_error;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_received, "client handshake finished");
+  strcpy(curState.message_sent, "NULL");
+  printTLS13State();
+  // #endif
 
   if (!ssl->s3->early_data_accepted) {
     if (!ssl_hash_message(hs, msg) ||
