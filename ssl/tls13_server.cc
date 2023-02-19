@@ -31,6 +31,8 @@
 #include "../crypto/internal.h"
 #include "internal.h"
 
+#include "mc_tls_sql.h"
+
 
 BSSL_NAMESPACE_BEGIN
 

@@ -170,6 +170,8 @@
 #include "internal.h"
 #include "../crypto/internal.h"
 
+#include "mc_tls_sql.h"
+
 
 BSSL_NAMESPACE_BEGIN
 
@@ -193,6 +195,7 @@ void printTLS13State() {
   fprintf(stderr, "message_received : %s \n", curState.message_received);
   fprintf(stderr, "message_sent : %s \n", curState.message_sent);
   fprintf(stderr, "\n-----------------------------------------\n");
+  add_new_state(curState,stateCounter);
   stateCounter++;
 }
 // #endif

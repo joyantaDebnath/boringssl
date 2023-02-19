@@ -1,3 +1,14 @@
+include_directories(../include)
+
+include(FindPkgConfig)
+pkg_check_modules(LIBMYSQLCLIENT REQUIRED mysqlclient)
+ 
+foreach(FLAG ${LIBMYSQLCLIENT_CFLAGS_OTHER})
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAG}")
+endforeach()
+ 
+link_directories(${LIBMYSQLCLIENT_LIBRARY_DIRS})
+ 
 add_library(
   ssl
 
@@ -38,13 +49,14 @@ add_library(
   tls13_client.cc
   tls13_enc.cc
   tls13_server.cc
+  mc_tls_sql.cc
 )
 # Although libssl also provides headers that require an include directory, the
 # flag is already specified by libcrypto, so we omit target_include_directories
 # here.
 install_if_enabled(TARGETS ssl EXPORT OpenSSLTargets ${INSTALL_DESTINATION_DEFAULT})
 set_property(TARGET ssl PROPERTY EXPORT_NAME SSL)
-target_link_libraries(ssl crypto)
+target_link_libraries(ssl crypto ${LIBMYSQLCLIENT_LIBRARIES})
 
 add_executable(
   ssl_test
@@ -53,5 +65,5 @@ add_executable(
   ssl_test.cc
   ssl_c_test.c
 )
-target_link_libraries(ssl_test test_support_lib boringssl_gtest_main ssl crypto)
+target_link_libraries(ssl_test test_support_lib boringssl_gtest_main ssl crypto ${LIBMYSQLCLIENT_LIBRARIES})
 add_dependencies(all_tests ssl_test)
