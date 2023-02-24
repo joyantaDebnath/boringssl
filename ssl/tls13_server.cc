@@ -799,7 +799,7 @@ static enum ssl_hs_wait_t do_send_server_hello(SSL_HANDSHAKE *hs) {
   if (!ssl->method->add_message(ssl, std::move(server_hello))) {
     return ssl_hs_error;
   }
-
+  
   // #ifdef INSTRUMENTATION
   strcpy(curState.message_sent, "server hello");
   printTLS13State();
@@ -1156,6 +1156,11 @@ static enum ssl_hs_wait_t do_read_client_certificate(SSL_HANDSHAKE *hs) {
   if (!ssl->method->get_message(ssl, &msg)) {
     return ssl_hs_read_message;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_expected, "client certificate");
+  // #endif
+
   if (!ssl_check_message_type(ssl, msg, SSL3_MT_CERTIFICATE) ||
       !tls13_process_certificate(hs, msg, allow_anonymous) ||
       !ssl_hash_message(hs, msg)) {
@@ -1195,6 +1200,10 @@ static enum ssl_hs_wait_t do_read_client_certificate_verify(SSL_HANDSHAKE *hs) {
       hs->tls13_state = state13_read_client_certificate_verify;
       return ssl_hs_certificate_verify;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_expected, "client certificate verify");
+  // #endif
 
   if (!ssl_check_message_type(ssl, msg, SSL3_MT_CERTIFICATE_VERIFY) ||
       !tls13_process_certificate_verify(hs, msg) ||
@@ -1241,6 +1250,11 @@ static enum ssl_hs_wait_t do_read_client_finished(SSL_HANDSHAKE *hs) {
   if (!ssl->method->get_message(ssl, &msg)) {
     return ssl_hs_read_message;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_expected, "client handshake finished");
+  // #endif
+
   if (!ssl_check_message_type(ssl, msg, SSL3_MT_FINISHED) ||
       // If early data was accepted, we've already computed the client Finished
       // and derived the resumption secret.

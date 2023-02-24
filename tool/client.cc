@@ -361,7 +361,8 @@ static bool DoConnection(SSL_CTX *ctx,
   bssl::UniquePtr<BIO> bio_stderr(BIO_new_fp(stderr, BIO_NOCLOSE));
   PrintConnectionInfo(bio_stderr.get(), ssl.get());
 
-  return cb(ssl.get(), sock);
+  // return cb(ssl.get(), sock);
+  return false; // joyanta: forcing terminate now
 }
 
 static void InfoCallback(const SSL *ssl, int type, int value) {

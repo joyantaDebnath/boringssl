@@ -697,7 +697,7 @@ static bool extract_sni(SSL_HANDSHAKE *hs, uint8_t *out_alert,
 static enum ssl_hs_wait_t do_read_client_hello(SSL_HANDSHAKE *hs) {
   
   // #ifdef INSTRUMENTATION
-  strcpy(curState.message_received, "client hello");
+  strcpy(curState.message_expected, "client hello");
   // #endif
 
   SSL *const ssl = hs->ssl;
@@ -710,6 +710,10 @@ static enum ssl_hs_wait_t do_read_client_hello(SSL_HANDSHAKE *hs) {
   if (!ssl_check_message_type(ssl, msg, SSL3_MT_CLIENT_HELLO)) {
     return ssl_hs_error;
   }
+
+  // #ifdef INSTRUMENTATION
+  strcpy(curState.message_received, "client hello");
+  // #endif
 
   SSL_CLIENT_HELLO client_hello;
   if (!ssl_client_hello_init(ssl, &client_hello, msg.body)) {
