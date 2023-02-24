@@ -7,8 +7,8 @@ bool add_new_state(  TLS13state  state, int state_counter){
     MYSQL *mysql =NULL;
 
     const char* host = "localhost";
-    const char* user = "root";
-    const char* passwd = "password";
+    const char* user = "joy";
+    const char* passwd = "@Joyanta1234";
     const char* db = "mydatabase";
 
     // const char* insert_query = "insert into mc_tls_state_info (state_counter, test_server_id, session_id_set , random_set,handshake_secret_set, handshake_key_set,handshake_iv_set,master_secret_set,application_key_set,application_iv_set, error_status_set, message_received, message_sent  ) values(?,?,?,?,?,?,?,?,?,?,?,?,? ); ";
