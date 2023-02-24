@@ -3,7 +3,7 @@
 #include<mysql/mysql.h>
 // #include "internal.h"
 
-bool add_new_state(struct TLS13state state, int state_counter) {
+bool add_new_state(struct TLS13state state, int state_counter, char state_hash[]) {
     MYSQL *mysql = NULL;
 
     const char* host = "localhost";
@@ -12,7 +12,7 @@ bool add_new_state(struct TLS13state state, int state_counter) {
     const char* db = "mydatabase";
     char server_name[] = "boringssl";
 
-    const char* insert_query = "insert into mc_tls_state_info (server_name, state_counter, session_id_set, random_set, handshake_secret_set, handshake_key_set, handshake_iv_set, master_secret_set, application_key_set, application_iv_set, error_status_set, terminated_set, message_expected, message_received, message_sent) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    const char* insert_query = "insert into mc_tls_state_info (server_name, state_counter, session_id_set, random_set, handshake_secret_set, handshake_key_set, handshake_iv_set, master_secret_set, application_key_set, application_iv_set, error_status_set, terminated_set, message_expected, message_received, message_sent, state_hash) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
     mysql = mysql_init(NULL);
     if(mysql == NULL){
@@ -38,17 +38,18 @@ bool add_new_state(struct TLS13state state, int state_counter) {
         exit(1);
     }
 
-    MYSQL_BIND input_bind[15];
+    MYSQL_BIND input_bind[16];
 
     memset(input_bind, 0, sizeof(input_bind));
     
-    int i =0;
+    int i = 0;
     unsigned long long_len = sizeof(state_counter);
     unsigned long bool_len = sizeof(state.session_id_set);
     unsigned long server_name_len = sizeof(server_name);
     unsigned long msg_expected_len = sizeof(state.message_expected);
     unsigned long msg_received_len = sizeof(state.message_received);
     unsigned long msg_sent_len = sizeof(state.message_sent);
+    unsigned long state_hash_len = 65;
 
     input_bind[i].buffer_type = MYSQL_TYPE_STRING;
     input_bind[i].buffer = server_name;
@@ -123,7 +124,12 @@ bool add_new_state(struct TLS13state state, int state_counter) {
     input_bind[i].buffer_type = MYSQL_TYPE_STRING;
     input_bind[i].buffer = state.message_sent;
     input_bind[i].buffer_length = sizeof(state.message_sent);
-    input_bind[i++].length = &msg_sent_len; 
+    input_bind[i++].length = &msg_sent_len;
+
+    input_bind[i].buffer_type = MYSQL_TYPE_STRING;
+    input_bind[i].buffer = (char*)state_hash;
+    input_bind[i].buffer_length = 65;
+    input_bind[i++].length = &state_hash_len;  
 
     if (mysql_stmt_bind_param(statement, input_bind)) {
         fprintf(stderr, "ERROR:mysql_stmt_bind_param failed\n");

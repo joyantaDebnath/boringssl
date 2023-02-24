@@ -166,6 +166,7 @@
 #include <openssl/nid.h>
 #include <openssl/rand.h>
 #include <openssl/x509.h>
+#include <openssl/sha.h>
 
 #include "internal.h"
 #include "../crypto/internal.h"
@@ -178,6 +179,20 @@ BSSL_NAMESPACE_BEGIN
 // #ifdef INSTRUMENTATION
 struct TLS13state curState;
 int stateCounter = 0;
+
+void sha256_string(char *string, char *outputBuffer) {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, string, strlen(string));
+    SHA256_Final(hash, &sha256);
+    int i = 0;
+    for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    {
+        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+    }
+    outputBuffer[64] = 0;
+}
 
 void updateTls13ErrorState() {
     curState.error_status = true;
@@ -208,7 +223,14 @@ void printTLS13State(void) {
   fprintf(stderr, "message_received : %s \n", curState.message_received);
   fprintf(stderr, "message_sent : %s \n", curState.message_sent);
   fprintf(stderr, "\n-----------------------------------------\n");
-  add_new_state(curState, stateCounter);
+
+  // generate hash
+  char state_hash[65];
+  char state_string[100];
+  sprintf(state_string, "%d-%d-%d-%d-%d-%d-%d-%d-%d-%d", curState.session_id_set, curState.random_set, curState.handshake_secret_set, curState.handshake_key_set, curState.handshake_iv_set, curState.master_secret_set, curState.application_key_set, curState.application_iv_set, curState.error_status, curState.terminated);
+  sha256_string((char*) state_string, state_hash);
+
+  add_new_state(curState, stateCounter, state_hash);
   stateCounter++;
 
   strcpy(curState.message_expected, "NULL");

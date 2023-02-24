@@ -201,6 +201,7 @@ BSSL_NAMESPACE_BEGIN
 void printTLS13State(void);
 void updateTls13ErrorState(void);
 void initTls13State(void);
+void sha256_string(char *string, char *outputBuffer);
 
 extern struct TLS13state curState;
 extern int stateCounter;

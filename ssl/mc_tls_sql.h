@@ -23,6 +23,6 @@ struct TLS13state {
   char message_sent[70];
 };
 
-bool add_new_state( struct TLS13state state, int state_counter);
+bool add_new_state( struct TLS13state state, int state_counter, char *state_hash);
 
 #endif
