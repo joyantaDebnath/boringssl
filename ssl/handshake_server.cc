@@ -179,7 +179,20 @@ BSSL_NAMESPACE_BEGIN
 struct TLS13state curState;
 int stateCounter = 0;
 
-void printTLS13State() {
+void updateTls13ErrorState() {
+    curState.error_status = true;
+    strcpy(curState.message_sent, "error");
+    printTLS13State();
+}
+
+void initTls13State() {
+    struct TLS13state curStateNew = {false, false, false, false, false, false, false, false, false, false, "NULL", "NULL", "NULL"};
+    curState = curStateNew;
+    stateCounter = 0;
+    printTLS13State();
+}
+
+void printTLS13State(void) {
   fprintf(stderr, "\n---------------- State : %d ---------------------\n", stateCounter);
   fprintf(stderr, "session_id_set : %d \n", curState.session_id_set);
   fprintf(stderr, "random_set : %d \n", curState.random_set);
@@ -195,8 +208,12 @@ void printTLS13State() {
   fprintf(stderr, "message_received : %s \n", curState.message_received);
   fprintf(stderr, "message_sent : %s \n", curState.message_sent);
   fprintf(stderr, "\n-----------------------------------------\n");
-  add_new_state(curState,stateCounter);
+  add_new_state(curState, stateCounter);
   stateCounter++;
+
+  strcpy(curState.message_expected, "NULL");
+  strcpy(curState.message_received, "NULL");
+  strcpy(curState.message_sent, "NULL");
 }
 // #endif
 
@@ -1885,9 +1902,6 @@ enum ssl_hs_wait_t ssl_server_handshake(SSL_HANDSHAKE *hs) {
     switch (state) {
       case state12_start_accept:
         ret = do_start_accept(hs);
-        // #ifdef INSTRUMENTATION
-        printTLS13State();
-        // #endif
         break;
       case state12_read_client_hello:
         ret = do_read_client_hello(hs);

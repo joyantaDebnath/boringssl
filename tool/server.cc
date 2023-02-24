@@ -410,6 +410,9 @@ bool Server(const std::vector<std::string> &args) {
       SSL_set_jdk11_workaround(ssl.get(), 1);
     }
 
+    // #ifdef INSTRUMENTATION
+    bssl::initTls13State();
+    // #endif
     int ret = SSL_accept(ssl.get());
     if (ret != 1) {
       int ssl_err = SSL_get_error(ssl.get(), ret);
@@ -417,9 +420,7 @@ bool Server(const std::vector<std::string> &args) {
       result = false;
 
       // #ifdef INSTRUMENTATION
-      bssl::curState.error_status = true;
-      strcpy(bssl::curState.message_sent, "error");
-      bssl::printTLS13State();
+      bssl::updateTls13ErrorState();
       // #endif
 
       continue;
