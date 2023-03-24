@@ -166,7 +166,7 @@
 #include "../crypto/internal.h"
 #include "../crypto/lhash/internal.h"
 
-#include "mc_tls_sql.h"
+// #include "mc_tls_sql.h"
 
 #if defined(OPENSSL_WINDOWS)
 // Windows defines struct timeval in winsock2.h.
@@ -181,27 +181,26 @@ OPENSSL_MSVC_PRAGMA(warning(pop))
 BSSL_NAMESPACE_BEGIN
 
 // #ifdef INSTRUMENTATION
-// struct TLS13state {
-//   bool session_id_set = false;
-//   bool random_set = false;
-//   bool handshake_secret_set = false;
-//   bool handshake_key_set = false;
-//   bool handshake_iv_set = false;
-//   bool master_secret_set = false;
-//   bool application_key_set = false;
-//   bool application_iv_set = false;
-//   bool error_status = false;
-//   bool terminated = false;
+struct TLS13state {
+  bool session_id_set;
+  bool random_set;
+  bool handshake_secret_set;
+  bool handshake_key_set;
+  bool handshake_iv_set;
+  bool master_secret_set;
+  bool application_key_set;
+  bool application_iv_set;
+  bool error_status;
+  bool terminated;
 
-//   char message_received[100] = "NULL";
-//   char message_sent[100] = "NULL";
-//   char message_expected[100] = "NULL";
-// };
+  char message_received[70];
+  char message_sent[70];
+};
 
 void printTLS13State(void);
 void updateTls13ErrorState(void);
 void initTls13State(void);
-void sha256_string(char *string, char *outputBuffer);
+// void sha256_string(char *string, char *outputBuffer);
 
 extern struct TLS13state curState;
 extern int stateCounter;

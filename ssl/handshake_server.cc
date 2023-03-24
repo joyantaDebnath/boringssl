@@ -171,7 +171,7 @@
 #include "internal.h"
 #include "../crypto/internal.h"
 
-#include "mc_tls_sql.h"
+// #include "mc_tls_sql.h"
 
 
 BSSL_NAMESPACE_BEGIN
@@ -180,19 +180,19 @@ BSSL_NAMESPACE_BEGIN
 struct TLS13state curState;
 int stateCounter = 0;
 
-void sha256_string(char *string, char *outputBuffer) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, string, strlen(string));
-    SHA256_Final(hash, &sha256);
-    int i = 0;
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
-    {
-        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
-    }
-    outputBuffer[64] = 0;
-}
+// void sha256_string(char *string, char *outputBuffer) {
+//     unsigned char hash[SHA256_DIGEST_LENGTH];
+//     SHA256_CTX sha256;
+//     SHA256_Init(&sha256);
+//     SHA256_Update(&sha256, string, strlen(string));
+//     SHA256_Final(hash, &sha256);
+//     int i = 0;
+//     for(i = 0; i < SHA256_DIGEST_LENGTH; i++)
+//     {
+//         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+//     }
+//     outputBuffer[64] = 0;
+// }
 
 void updateTls13ErrorState() {
     curState.error_status = true;
@@ -201,7 +201,7 @@ void updateTls13ErrorState() {
 }
 
 void initTls13State() {
-    struct TLS13state curStateNew = {false, false, false, false, false, false, false, false, false, false, "NULL", "NULL", "NULL"};
+    struct TLS13state curStateNew = {false, false, false, false, false, false, false, false, false, false, "NULL", "NULL"};
     curState = curStateNew;
     stateCounter = 0;
     printTLS13State();
@@ -219,21 +219,19 @@ void printTLS13State(void) {
   fprintf(stderr, "application_iv_set : %d \n", curState.application_iv_set);
   fprintf(stderr, "error_status : %d \n", curState.error_status);
   fprintf(stderr, "terminated : %d \n", curState.terminated);
-  fprintf(stderr, "message_expected : %s \n", curState.message_expected);
   fprintf(stderr, "message_received : %s \n", curState.message_received);
   fprintf(stderr, "message_sent : %s \n", curState.message_sent);
   fprintf(stderr, "\n-----------------------------------------\n");
 
   // generate hash
-  char state_hash[65];
-  char state_string[100];
-  sprintf(state_string, "%d-%d-%d-%d-%d-%d-%d-%d-%d-%d", curState.session_id_set, curState.random_set, curState.handshake_secret_set, curState.handshake_key_set, curState.handshake_iv_set, curState.master_secret_set, curState.application_key_set, curState.application_iv_set, curState.error_status, curState.terminated);
-  sha256_string((char*) state_string, state_hash);
+  // char state_hash[65];
+  // char state_string[100];
+  // sprintf(state_string, "%d-%d-%d-%d-%d-%d-%d-%d-%d-%d", curState.session_id_set, curState.random_set, curState.handshake_secret_set, curState.handshake_key_set, curState.handshake_iv_set, curState.master_secret_set, curState.application_key_set, curState.application_iv_set, curState.error_status, curState.terminated);
+  // sha256_string((char*) state_string, state_hash);
 
-  add_new_state(curState, stateCounter, state_hash);
+  // add_new_state(curState, stateCounter, state_hash);
   stateCounter++;
 
-  strcpy(curState.message_expected, "NULL");
   strcpy(curState.message_received, "NULL");
   strcpy(curState.message_sent, "NULL");
 }
@@ -695,11 +693,6 @@ static bool extract_sni(SSL_HANDSHAKE *hs, uint8_t *out_alert,
 }
 
 static enum ssl_hs_wait_t do_read_client_hello(SSL_HANDSHAKE *hs) {
-  
-  // #ifdef INSTRUMENTATION
-  strcpy(curState.message_expected, "client hello");
-  // #endif
-
   SSL *const ssl = hs->ssl;
 
   SSLMessage msg;
