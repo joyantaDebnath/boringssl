@@ -208,20 +208,21 @@ void initTls13State() {
 }
 
 void printTLS13State(void) {
-  fprintf(stderr, "\n---------------- State : %d ---------------------\n", stateCounter);
-  fprintf(stderr, "session_id_set : %d \n", curState.session_id_set);
-  fprintf(stderr, "random_set : %d \n", curState.random_set);
-  fprintf(stderr, "handshake_secret_set : %d \n", curState.handshake_secret_set);
-  fprintf(stderr, "handshake_key_set : %d \n", curState.handshake_key_set);
-  fprintf(stderr, "handshake_iv_set : %d \n", curState.handshake_iv_set);
-  fprintf(stderr, "master_secret_set : %d \n", curState.master_secret_set);
-  fprintf(stderr, "application_key_set : %d \n", curState.application_key_set);
-  fprintf(stderr, "application_iv_set : %d \n", curState.application_iv_set);
-  fprintf(stderr, "error_status : %d \n", curState.error_status);
-  fprintf(stderr, "terminated : %d \n", curState.terminated);
-  fprintf(stderr, "message_received : %s \n", curState.message_received);
-  fprintf(stderr, "message_sent : %s \n", curState.message_sent);
-  fprintf(stderr, "\n-----------------------------------------\n");
+  // fprintf(stderr, "\n---------------- State : %d ---------------------\n", stateCounter);
+  // fprintf(stderr, "session_id_set : %d \n", curState.session_id_set);
+  // fprintf(stderr, "random_set : %d \n", curState.random_set);
+  // fprintf(stderr, "handshake_secret_set : %d \n", curState.handshake_secret_set);
+  // fprintf(stderr, "handshake_key_set : %d \n", curState.handshake_key_set);
+  // fprintf(stderr, "handshake_iv_set : %d \n", curState.handshake_iv_set);
+  // fprintf(stderr, "master_secret_set : %d \n", curState.master_secret_set);
+  // fprintf(stderr, "application_key_set : %d \n", curState.application_key_set);
+  // fprintf(stderr, "application_iv_set : %d \n", curState.application_iv_set);
+  // fprintf(stderr, "error_status : %d \n", curState.error_status);
+  // fprintf(stderr, "terminated : %d \n", curState.terminated);
+  // fprintf(stderr, "message_received : %s \n", curState.message_received);
+  // fprintf(stderr, "message_sent : %s \n", curState.message_sent);
+  // fprintf(stderr, "\n-----------------------------------------\n");
+  fprintf(stderr, "%d ===> %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %s, %s\n", stateCounter, curState.session_id_set, curState.random_set, curState.handshake_secret_set, curState.handshake_key_set, curState.handshake_iv_set, curState.master_secret_set, curState.application_key_set, curState.application_iv_set, curState.error_status, curState.terminated, curState.message_received, curState.message_sent);
 
   // generate hash
   // char state_hash[65];
